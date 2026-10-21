@@ -1,6 +1,10 @@
 # Home Credit Default Risk
 
 [![CI](https://github.com/nancyvora/Home-Credit-Default-Risk/actions/workflows/ci.yml/badge.svg)](https://github.com/nancyvora/Home-Credit-Default-Risk/actions/workflows/ci.yml)
+[![Live demo](https://img.shields.io/badge/demo-Hugging%20Face%20Space-yellow)](https://huggingface.co/spaces/nancyvora/Home-Credit-Default-Risk)
+
+**Live demo:** [huggingface.co/spaces/nancyvora/Home-Credit-Default-Risk](https://huggingface.co/spaces/nancyvora/Home-Credit-Default-Risk):
+score an applicant and see the features that moved the risk most.
 
 Predicting which loan applicants will have payment difficulties, from their application and their credit history:
 [Kaggle: Home Credit Default Risk](https://www.kaggle.com/competitions/home-credit-default-risk).
@@ -69,9 +73,11 @@ src/
   features/          build_features.py, plus one verified module per table (bureau, previous_application, installments, ...)
   models/            train.py, evaluate.py, tune.py (Optuna with the two-test rule), pipeline.py (shared by every notebook)
   serving/           inference.py, model/ (the final model, its metadata, input schema and holdout evaluation)
-  app/               app.py (FastAPI + Gradio form), main.py (starts the server)
+  app/               app.py (FastAPI), ui.py (Gradio interface), main.py (starts the server)
   utils/             validate_data.py (Great Expectations checks), utils.py (config, logging)
 scripts/run_pipeline.py    load -> validate -> preprocess -> features -> evaluate -> train -> holdout -> submission
+scripts/build_hf_space.py  assembles and checks the Hugging Face Space
+deploy/huggingface/  the Space: app.py, requirements, and a copy of the serving code and model made by the script above
 tests/               71 pytest tests
 Dockerfile           the scoring service
 ```
@@ -111,9 +117,23 @@ python -m src.serving.inference                   # Kaggle submission from the s
 **The scoring service:**
 
 ```bash
-python -m src.app.main                            # http://127.0.0.1:8000/docs, form at /ui
+python -m src.app.main                            # http://127.0.0.1:8000/docs, interface at /ui
 docker build -t home-credit-api . && docker run -p 8000:8000 home-credit-api
 ```
+
+The Gradio interface has three tabs. **Quick check** takes a few application fields, gives every other field a typical
+value, and scores the applicant as having no credit history. **Full application (JSON)** takes the same request as the
+API. **About the model** gives the scores and the limits.
+
+**The Hugging Face Space** runs the same interface on ZeroGPU hardware. The scoring functions are marked `spaces.GPU`,
+although the model scores on the CPU. To update it:
+
+```bash
+python scripts/build_hf_space.py                  # copies the serving code and model into deploy/huggingface, and checks they run on their own
+hf upload nancyvora/Home-Credit-Default-Risk deploy/huggingface . --repo-type space --delete "**/__pycache__/**"
+```
+
+`hf upload` sends the files byte for byte, so the model passes its checksum on the Space.
 
 `POST /predict` takes one application row and, optionally, the applicant's records in each history table. It
 returns the probability, the decision at the threshold and the five features that moved the risk most:
