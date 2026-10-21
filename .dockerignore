@@ -1,0 +1,18 @@
+# Only requirements-serving.txt and src/ go into the image.
+.venv/
+data/
+notebooks/
+artifacts/
+catboost_info/
+great_expectations/
+tests/
+scripts/
+configs/
+docs/
+docker/
+app/
+**/__pycache__/
+**/*.pyc
+.git/
+.pytest_cache/
+*.log

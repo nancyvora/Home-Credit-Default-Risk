@@ -1,0 +1,45 @@
+{
+  "model": "artifacts/model_with_credit_cards (notebook 12), unchanged",
+  "model_sha256": "a8d8d5b93c23e460066f5aef7666947bc67ce33f281e8ae7f80bb230272ad4eb",
+  "note": "The holdout was scored once, in notebook 13, with the same recipe fitted on the 246,008 development applicants only. The saved model was fitted on all of train, holdout included, so it has not itself been scored on the holdout.",
+  "holdout": {
+    "roc_auc": 0.7947199678587782,
+    "interval": [
+      0.7883247124626472,
+      0.8013923156190367
+    ],
+    "pr_auc": 0.298306860529551,
+    "log_loss": 0.23382765788358584,
+    "cv_roc_auc": 0.7947572665770346,
+    "application_only_roc_auc": 0.771532668258267,
+    "gain_over_application_only": 0.023187299600511135,
+    "gain_interval": [
+      0.01929533797002527,
+      0.026888923207869488
+    ],
+    "rows": 61503,
+    "defaults": 4965,
+    "expectations_met": {
+      "1. agreement": true,
+      "2. the gain carries over": true,
+      "3. calibration": true
+    }
+  },
+  "cross_validation": {
+    "roc_auc": 0.7947572665770346,
+    "pr_auc": 0.2879233707738299,
+    "log_loss": 0.2346865004117978
+  },
+  "kaggle": {
+    "private": 0.79428,
+    "public": 0.79326
+  },
+  "settings_search": {
+    "trials": 30,
+    "best_trial": 21,
+    "first_test_passed": true,
+    "second_test_passed": false,
+    "best_trial_at_final_rate_minus_current": -0.00047898154701730977,
+    "outcome": "settings of notebook 02 kept, 3,500 trees"
+  }
+}

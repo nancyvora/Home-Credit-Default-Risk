@@ -1,0 +1,41 @@
+{
+  "params": {
+    "num_leaves": 10,
+    "max_depth": 10,
+    "min_child_samples": 803,
+    "colsample_bytree": 0.30192000260029384,
+    "reg_alpha": 0.0047518807745565005,
+    "reg_lambda": 0.4351301015589593,
+    "min_split_gain": 0.00945625177068013,
+    "cat_smooth": 24.28427142659751,
+    "neg_bagging_fraction": 0.6150954637918717,
+    "scale_pos_weight": 1.2018068632470789
+  },
+  "trees": 3500,
+  "changed": false,
+  "best_trial": 21,
+  "first_test": {
+    "mean_difference": 0.0005307933425966693,
+    "standard_error": 0.00015107762239527977,
+    "folds_better": 5,
+    "conditions": {
+      "1. mean ROC AUC is higher": true,
+      "2. higher in at least four of five folds": true,
+      "3. gain is more than twice its standard error": true,
+      "4. gain exceeds the noise floor of 0.0005": true
+    },
+    "passed": true
+  },
+  "second_test": {
+    "mean_difference": -0.00047898154701730977,
+    "standard_error": 0.00026608466094889906,
+    "folds_better": 2,
+    "conditions": {
+      "1. mean ROC AUC is higher": false,
+      "2. higher in at least four of five folds": false,
+      "3. gain is more than twice its standard error": false,
+      "4. gain exceeds the noise floor of 0.0005": false
+    },
+    "passed": false
+  }
+}

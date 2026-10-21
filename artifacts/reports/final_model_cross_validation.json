@@ -1,0 +1,67 @@
+{
+  "folds": {
+    "0": {
+      "roc_auc": 0.7947161804085597,
+      "pr_auc": 0.2818966618554752,
+      "log_loss": 0.23524806145611,
+      "brier": 0.06573322706618574,
+      "fit_seconds": 212.57240343093872
+    },
+    "1": {
+      "roc_auc": 0.7917413214633766,
+      "pr_auc": 0.28305419812489674,
+      "log_loss": 0.23572774181352257,
+      "brier": 0.06568833860633125,
+      "fit_seconds": 256.7116000652313
+    },
+    "2": {
+      "roc_auc": 0.7953393631609638,
+      "pr_auc": 0.2913685304041867,
+      "log_loss": 0.23424722783395996,
+      "brier": 0.06532097355432044,
+      "fit_seconds": 237.8726806640625
+    },
+    "3": {
+      "roc_auc": 0.7952641672632168,
+      "pr_auc": 0.2910002241381658,
+      "log_loss": 0.23433608838218994,
+      "brier": 0.06537187635205097,
+      "fit_seconds": 235.25683760643005
+    },
+    "4": {
+      "roc_auc": 0.7967253005890558,
+      "pr_auc": 0.2922972393464253,
+      "log_loss": 0.23387338257320667,
+      "brier": 0.06525142628161444,
+      "fit_seconds": 228.67806673049927
+    }
+  },
+  "mean": {
+    "roc_auc": 0.7947572665770346,
+    "pr_auc": 0.2879233707738299,
+    "log_loss": 0.2346865004117978,
+    "brier": 0.06547316837210057,
+    "fit_seconds": 234.21831769943236
+  },
+  "out_of_fold": {
+    "ROC AUC": 0.7947384753215556,
+    "PR AUC": 0.2874155874515484,
+    "log loss": 0.23468650514144024,
+    "Brier score": 0.06547316968520465,
+    "average prediction %": 8.119446992480107,
+    "actual default rate %": 8.07290819810738,
+    "calibration slope": 1.017156870064091,
+    "calibration intercept": 0.02694816952442012,
+    "largest gap in a tenth (pts)": 0.7313472263097474,
+    "declined %": 27.997463497122045,
+    "defaults caught %": 68.38368580060423,
+    "default rate among approved %": 3.544814036989364,
+    "default rate among declined %": 19.718044021139438,
+    "confusion matrix": {
+      "approved, repaid": 170853,
+      "declined, would have repaid": 55295,
+      "approved, defaulted": 6279,
+      "declined, would have defaulted": 13581
+    }
+  }
+}

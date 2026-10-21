@@ -1,0 +1,162 @@
+# The final model: the recipe chosen in notebooks 02 to 13.
+# The scripts in scripts/ read this file. Changing a value here changes the model the scripts build;
+# the notebooks recorded the evidence for these values and do not read this file.
+
+name: Home Credit default risk, application, credit bureau, previous application, instalment payment and credit card tables
+
+paths:
+  raw_dir: data/raw
+  processed_dir: data/processed
+  split: data/processed/application_split.parquet
+  model_dir: artifacts/model_with_credit_cards        # the saved final model (notebook 12), used by predict
+  submissions_dir: artifacts/submissions
+
+split:                       # notebook 02: frozen; the code refuses to overwrite it with a different split
+  holdout_fraction: 0.20
+  n_folds: 5
+  seed: 42
+
+# feature tables built from the raw files; each one is joined to the application table on SK_ID_CURR
+tables: [application, bureau, previous, installments, pos_cash, credit_card]
+
+features:                    # the 111 features of the final model, by table, in the model's column order
+  application:
+    - NAME_CONTRACT_TYPE
+    - CODE_GENDER
+    - AMT_CREDIT
+    - AMT_ANNUITY
+    - AMT_GOODS_PRICE
+    - NAME_FAMILY_STATUS
+    - NAME_HOUSING_TYPE
+    - REGION_POPULATION_RELATIVE
+    - DAYS_BIRTH
+    - DAYS_EMPLOYED
+    - DAYS_REGISTRATION
+    - DAYS_ID_PUBLISH
+    - OWN_CAR_AGE
+    - FLAG_WORK_PHONE
+    - OCCUPATION_TYPE
+    - REGION_RATING_CLIENT_W_CITY
+    - REG_CITY_NOT_LIVE_CITY
+    - ORGANIZATION_TYPE
+    - EXT_SOURCE_1
+    - EXT_SOURCE_2
+    - EXT_SOURCE_3
+    - OBS_30_CNT_SOCIAL_CIRCLE
+    - DEF_30_CNT_SOCIAL_CIRCLE
+    - DAYS_LAST_PHONE_CHANGE
+    - FLAG_DOCUMENT_3
+    - AMT_REQ_CREDIT_BUREAU_YEAR
+    - EXT_MEAN
+    - EXT_MIN
+    - EXT_MAX
+    - EXT_STD
+    - EXT_N_MISSING
+    - ANNUITY_TO_CREDIT
+    - CREDIT_TO_GOODS
+    - CREDIT_TO_INCOME
+    - ANNUITY_TO_INCOME
+    - EDUCATION_LEVEL
+  bureau:
+    - BUREAU_DAYS_SINCE_LAST_CLOSED
+    - BUREAU_LIVE_MAX_DAYS_REMAINING
+    - BUREAU_LIVE_LOAN_MAX_SHARE_OWED
+    - BUREAU_DAYS_SINCE_LAST_OVERDUE_CREDIT_OPENED
+    - BUREAU_LIVE_DEBT_MAX
+    - BUREAU_LIVE_LOAN_SHARE_OWED
+    - BUREAU_N_LIVE_DEBT_BLANK
+    - BUREAU_SHARE_LIVE
+    - BUREAU_AMOUNT_MEDIAN
+    - BUREAU_DAYS_SINCE_LAST_OPENED
+    - BUREAU_AMOUNT_MAX
+    - BUREAU_N_LIVE_ZERO_DEBT
+    - BUREAU_N_FINISHED
+    - BUREAU_CARD_USE_OF_LIMIT
+    - BUREAU_MEAN_DAYS_BETWEEN_OPENINGS
+    - BUREAU_DAYS_SINCE_LAST_UPDATE
+    - BUREAU_DAYS_SINCE_FIRST_OPENED
+    - BUREAU_N_MORTGAGES
+    - BUREAU_SHARE_CLOSED_EARLY
+    - BUREAU_SHARE_CLOSED_LATE
+    - BUREAU_N_MICROLOANS
+    - BUREAU_N_LIVE_MICROLOANS
+    - BUREAU_N_OVERDUE_NOW
+    - BUREAU_N_SOLD_OR_BAD
+  previous:
+    - PREV_AMT_ANNUITY_MEAN
+    - PREV_RUNNING_MAX_DAYS_REMAINING
+    - PREV_COST_OF_CREDIT_MEAN
+    - PREV_N_LOANS_ENDED
+    - PREV_RUNNING_ANNUITY_SUM
+    - PREV_GRANTED_TO_REQUESTED_MEAN
+    - PREV_DOWN_PAYMENT_RATE_MEAN
+    - PREV_COST_OF_CREDIT_LAST
+    - PREV_DAYS_SINCE_LAST_REFUSAL
+    - PREV_RATE_PER_PAYMENT_MEAN
+    - PREV_DAYS_SINCE_FIRST_DECISION
+    - PREV_AMT_CREDIT_MEAN
+    - PREV_DAYS_SINCE_LAST_DECISION
+    - PREV_YIELD_LEVEL_MEAN
+    - PREV_MEAN_DAYS_BETWEEN_DECISIONS
+    - PREV_HOUR_MEAN
+    - PREV_N_APPROVED_CASH
+    - PREV_YIELD_LEVEL_LAST
+    - PREV_N_APPROVED_REVOLVING
+    - PREV_N_APPROVED
+    - PREV_N_REFUSED_LIMIT
+    - PREV_N_REFUSED_SCOFR
+    - PREV_N_REFUSED_OTHER
+    - PREV_N_CHANNEL_AP_CASH
+    - PREV_N_REFUSED_REVOLVING
+  installments:
+    - INST_N_INSTALMENTS
+    - INST_MEDIAN_AMT_DUE
+    - INST_CARD_MEAN_PAYMENT_12M
+    - INST_DAYS_SINCE_LAST_LATE_5D
+    - INST_MAX_DAYS_LATE
+    - INST_SHARE_SPLIT_DUE
+    - INST_SHARE_PAID_IN_PARTS_12M
+    - INST_DAYS_SINCE_LAST_PAYMENT
+    - INST_LAST_TIMING
+    - INST_TIMING_CHANGE
+    - INST_PAID_12M
+    - INST_MEAN_DAYS_EARLY
+    - INST_SHARE_LATE_5D
+    - INST_CARD_N_INSTALMENTS
+    - INST_SHARE_LOANS_LARGE_PAYMENT
+    - INST_CARD_ACTIVE_90D
+    - INST_MEAN_TIMING_12M
+    - INST_SHARE_PAID_IN_PARTS
+    - INST_N_PAYMENTS_30D
+    - INST_CARD_SHARE_LATE_5D
+    - INST_N_SHORT
+    - INST_N_PENALTIES
+    - INST_N_PENALTIES_24M
+  credit_card:
+    - CC_N_ATM_12M
+    - CC_BALANCE_LATEST
+    - CC_SHARE_OVER_LIMIT
+
+model:
+  learning_rate: 0.02
+  trees: 3500
+  seed: 42
+  lightgbm:                  # notebook 02's search; kept after the search on the final features in notebook 13
+    num_leaves: 10
+    max_depth: 10
+    min_child_samples: 803
+    colsample_bytree: 0.30192000260029384
+    reg_alpha: 0.0047518807745565005
+    reg_lambda: 0.4351301015589593
+    min_split_gain: 0.00945625177068013
+    cat_smooth: 24.28427142659751
+    neg_bagging_fraction: 0.6150954637918717
+    scale_pos_weight: 1.2018068632470789
+  calibration: platt         # fitted on out-of-fold predictions inside the training rows
+
+decision:
+  reference_threshold: 0.09090909090909091    # decline at or above; a missed default costs 10 times a wrongly declined applicant
+  thresholds_by_cost_ratio:
+    5: 0.16666666666666666
+    10: 0.09090909090909091
+    20: 0.047619047619047616

@@ -1,0 +1,208 @@
+{
+  "description": "Features from the payments an applicant made on earlier Home Credit loans, one row per applicant. Built in notebooks/07_installments_eda_features.ipynb.",
+  "source": "data/raw/installments_payments.csv",
+  "not_used": {
+    "POS_CASH_balance.csv, credit_card_balance.csv": "Out of scope for this table. Both passed the supply test in notebook 05 and are for later notebooks.",
+    "previous_application.csv": "Used in the notebook to interpret the rows (loan type, planned payments, end dates). No feature in this table reads it."
+  },
+  "tables": {
+    "train": {
+      "file": "installments_train_features.parquet",
+      "rows": 307511,
+      "sha256": "3881d946487133cd5111ff7b8ec404153f483693920b7d37ecca0826b2696282",
+      "row_order": "application_train_features.parquet"
+    },
+    "test": {
+      "file": "installments_test_features.parquet",
+      "rows": 48744,
+      "sha256": "e8c830000b7c4f63dafe5b2f136a9db45a47edcf8431114d80f990c1fc68d3ef",
+      "row_order": "application_test_features.parquet"
+    }
+  },
+  "index": "SK_ID_CURR",
+  "applicants_without_a_payment_history": "Every feature is missing.",
+  "features": {
+    "INST_N_INSTALMENTS": {
+      "family": "volume",
+      "definition": "Instalments on record for loans with a fixed schedule (cash and consumer loans), not counting penalty charges."
+    },
+    "INST_DAYS_SINCE_LAST_PAYMENT": {
+      "family": "volume",
+      "definition": "Days from the most recent payment to the current application."
+    },
+    "INST_N_PAYMENTS_30D": {
+      "family": "volume",
+      "definition": "Instalments, of any kind, whose last payment was made in the 30 days before the application."
+    },
+    "INST_SHARE_LATE_5D": {
+      "family": "lateness",
+      "definition": "Share of schedule instalments completed more than 5 days after the due date."
+    },
+    "INST_MAX_DAYS_LATE": {
+      "family": "lateness",
+      "definition": "The longest delay on any paid schedule instalment, in days. Zero if none was late."
+    },
+    "INST_N_LATE_30D": {
+      "family": "lateness",
+      "definition": "Schedule instalments completed more than 30 days late, among those that fell due more than 30 days before the application."
+    },
+    "INST_MEAN_DAYS_EARLY": {
+      "family": "lateness",
+      "definition": "Average number of days paid before the due date over paid schedule instalments, with a late payment counted as zero, capped at 60."
+    },
+    "INST_SHARE_LATE_5D_12M": {
+      "family": "recent behaviour",
+      "definition": "Share completed more than 5 days late, among schedule instalments due in the 365 days before the application."
+    },
+    "INST_MEAN_TIMING_12M": {
+      "family": "recent behaviour",
+      "definition": "Average of completion date minus due date, in days (negative is early), each capped at 60 either way, over paid schedule instalments due in the last 365 days."
+    },
+    "INST_TIMING_CHANGE": {
+      "family": "recent behaviour",
+      "definition": "MEAN_TIMING_12M minus the same average over earlier instalments. Positive means paying later than before."
+    },
+    "INST_N_LATE_5D_6M": {
+      "family": "recent behaviour",
+      "definition": "Schedule instalments due in the last 183 days and completed more than 5 days late.",
+      "warning": "Differs between train and test (stage 8, rule 1): keep with a warning: recent late payment is rarer among test applicants, while the columns are filled in equally often in both files. Report the model with and without it."
+    },
+    "INST_DAYS_SINCE_LAST_LATE_5D": {
+      "family": "recent behaviour",
+      "definition": "Days since a schedule instalment last fell due that was completed more than 5 days late. Missing if none ever was."
+    },
+    "INST_LAST_TIMING": {
+      "family": "recent behaviour",
+      "definition": "Completion date minus due date for the schedule instalment with the latest due date. Missing if it has no payment."
+    },
+    "INST_SHARE_PAID_IN_PARTS": {
+      "family": "parts and shortfall",
+      "definition": "Share of schedule instalments paid in more than one payment."
+    },
+    "INST_SHARE_PAID_IN_PARTS_12M": {
+      "family": "parts and shortfall",
+      "definition": "The same, among schedule instalments due in the last 365 days."
+    },
+    "INST_N_SHORT": {
+      "family": "parts and shortfall",
+      "definition": "Schedule instalments that were paid, but for less than was due."
+    },
+    "INST_N_UNPAID_RECENT": {
+      "family": "unpaid",
+      "definition": "Instalments of 200 or more with no payment on record, due within 30 days of the application. Penalty charges are not counted.",
+      "warning": "Differs between train and test (stage 8, rule 1): keep with a warning: a recent unpaid instalment is rarer among test applicants, while the columns are filled in equally often in both files. Report the model with and without it."
+    },
+    "INST_N_UNPAID_OLDER": {
+      "family": "unpaid",
+      "definition": "The same, due more than 30 days before the application."
+    },
+    "INST_N_PENALTIES": {
+      "family": "penalties",
+      "definition": "Rows numbered above 100 on loans other than cards, read as charges raised after a late payment."
+    },
+    "INST_N_PENALTIES_24M": {
+      "family": "penalties",
+      "definition": "Penalty charges that fell due in the 730 days before the application."
+    },
+    "INST_DAYS_SINCE_LAST_PENALTY": {
+      "family": "penalties",
+      "definition": "Days since the most recent penalty charge fell due. Missing if there is none."
+    },
+    "INST_CARD_N_INSTALMENTS": {
+      "family": "cards",
+      "definition": "Instalments on record for credit cards (loans with calendar version 0)."
+    },
+    "INST_CARD_SHARE_LATE_5D": {
+      "family": "cards",
+      "definition": "Share of card instalments completed more than 5 days late."
+    },
+    "INST_CARD_ACTIVE_90D": {
+      "family": "cards",
+      "definition": "1 if a card instalment fell due in the 90 days before the application, otherwise 0."
+    },
+    "INST_CARD_MEAN_PAYMENT_12M": {
+      "family": "cards",
+      "definition": "Average amount paid per card instalment due in the last 365 days."
+    },
+    "INST_PAID_12M": {
+      "family": "amounts",
+      "definition": "Total paid on schedule instalments due in the last 365 days."
+    },
+    "INST_MEDIAN_AMT_DUE": {
+      "family": "amounts",
+      "definition": "Median amount due per schedule instalment."
+    },
+    "INST_SHARE_LOANS_LARGE_PAYMENT": {
+      "family": "amounts",
+      "definition": "Share of schedule loans that include an instalment more than three times that loan's median: an early repayment of the balance."
+    },
+    "INST_SHARE_SPLIT_DUE": {
+      "family": "amounts",
+      "definition": "Share of schedule instalments whose amount due is written in parts under more than one calendar version."
+    }
+  },
+  "dropped_in_screening": {
+    "INST_N_LOANS": {
+      "reason": "redundant with a saved feature",
+      "definition": "Loans with a payment on record, of any kind. 0 when there is no payment history.",
+      "the saved feature it repeats": "PREV_N_APPROVED"
+    },
+    "INST_DAYS_SINCE_FIRST_DUE": {
+      "reason": "redundant with a saved feature",
+      "definition": "Days from the earliest due date on record to the current application. The record stops at eight years.",
+      "the saved feature it repeats": "PREV_DAYS_SINCE_FIRST_DECISION"
+    },
+    "INST_SHARE_LATE": {
+      "reason": "redundant with another candidate",
+      "definition": "Share of schedule instalments completed after the due date."
+    },
+    "INST_MEAN_DAYS_LATE": {
+      "reason": "redundant with another candidate",
+      "definition": "Average delay over paid schedule instalments, with an on-time payment counted as zero and each delay capped at 60 days."
+    }
+  },
+  "constants": {
+    "card_version": 0,
+    "penalty_rows_numbered_above": 100,
+    "unpaid_minimum_amount": 200,
+    "late_days": 5,
+    "long_late_days": 30,
+    "timing_cap_days": 60,
+    "recent_days": 365,
+    "half_year_days": 183,
+    "penalty_recent_days": 730,
+    "unpaid_recent_days": 30,
+    "card_active_days": 90,
+    "payments_window_days": 30,
+    "large_payment_factor": 3
+  },
+  "cleaning_rules": [
+    "A payment of zero is treated as no payment.",
+    "A row with no payment is dropped when the same instalment, in the same calendar version, has a payment on another row.",
+    "A loan is a card if any of its rows has calendar version 0.",
+    "On loans other than cards, rows numbered above 100 are penalty charges, kept apart from the schedule.",
+    "Within an instalment, the amount due is summed over calendar versions and the amount paid is taken from one."
+  ],
+  "unit": "One instalment is one loan and instalment number. Lateness is the date the instalment was completed minus its due date.",
+  "most_recent_rule": "The latest due date, with ties broken by the higher SK_ID_PREV and then the higher instalment number.",
+  "limits": [
+    "A row exists only when both its dates are before the application, so the last few weeks before it are incompletely recorded (stage 4).",
+    "A delay cannot be recorded as longer than the time between the due date and the application.",
+    "An instalment that fell due and was not paid usually has no row at all. The unpaid counts see only the few that do.",
+    "The reading of rows numbered above 100 as penalty charges rests on their pattern, not on the data dictionary."
+  ],
+  "properties_verified": [
+    "Each applicant's features depend on that applicant's rows only (section 7.4).",
+    "No function uses the target, and none contains a number estimated from the data.",
+    "An independent rebuild of 540 applicants from the raw rows agrees on all 33 features (section 7.2).",
+    "No due date and no payment date is on or after the current application (stage 4).",
+    "Fifteen facts about the table pass the train-test supply test (section 3.6)."
+  ],
+  "selection_note": "No feature was dropped using outcomes. Four were dropped as near-copies. The holdout was not used.",
+  "code": "src/features/installments.py",
+  "versions": {
+    "python": "3.13.5",
+    "pandas": "3.0.6",
+    "numpy": "2.5.3"
+  }
+}

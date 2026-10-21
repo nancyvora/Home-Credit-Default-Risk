@@ -1,0 +1,295 @@
+{
+  "description": "Features from the applicant's earlier applications to Home Credit, one row per applicant. Built in notebooks/05_previous_application_eda_features.ipynb.",
+  "source": "data/raw/previous_application.csv",
+  "not_used": {
+    "installments_payments.csv, POS_CASH_balance.csv, credit_card_balance.csv": "Out of scope for this table. All three pass the supply test (section 1.5) and are for later notebooks.",
+    "RATE_INTEREST_PRIMARY, RATE_INTEREST_PRIVILEGED": "Blank on 99.6% of rows.",
+    "AMT_GOODS_PRICE": "Equal to AMT_APPLICATION wherever both are present."
+  },
+  "tables": {
+    "train": {
+      "file": "previous_train_features.parquet",
+      "rows": 307511,
+      "sha256": "b9da392624e4a4873885fa0ad8890f75e5e6da41d66077d1ac567be936c1802f",
+      "row_order": "application_train_features.parquet"
+    },
+    "test": {
+      "file": "previous_test_features.parquet",
+      "rows": 48744,
+      "sha256": "f5fe73bb3d40650c6bda6fbc5c3d71d46ed019172255fab9172760313a032e32",
+      "row_order": "application_test_features.parquet"
+    }
+  },
+  "index": "SK_ID_CURR",
+  "applicants_without_an_earlier_application": "PREV_N_APPLICATIONS is 0 and every other feature is missing.",
+  "features": {
+    "PREV_N_APPLICATIONS": {
+      "family": "outcomes",
+      "definition": "Number of earlier applications to Home Credit after cleaning. 0 when there are none, in which case every other feature is missing."
+    },
+    "PREV_N_APPROVED": {
+      "family": "outcomes",
+      "definition": "Earlier applications that were approved."
+    },
+    "PREV_N_REFUSED": {
+      "family": "outcomes",
+      "definition": "Earlier applications that were refused."
+    },
+    "PREV_N_CANCELED": {
+      "family": "outcomes",
+      "definition": "Earlier applications that were cancelled. Such records exist for about two years only, and most have nothing requested."
+    },
+    "PREV_LAST_DECIDED_WAS_REFUSED": {
+      "family": "outcomes",
+      "definition": "1 if the most recent decided application was refused, 0 if it was approved."
+    },
+    "PREV_N_REFUSED_12M": {
+      "family": "refusals",
+      "definition": "Refusals decided in the 365 days before the current application."
+    },
+    "PREV_N_REFUSED_24M": {
+      "family": "refusals",
+      "definition": "Refusals decided in the 730 days before."
+    },
+    "PREV_DAYS_SINCE_LAST_REFUSAL": {
+      "family": "refusals",
+      "definition": "Days from the most recent refusal to the current application."
+    },
+    "PREV_N_REFUSED_HC": {
+      "family": "refusals",
+      "definition": "Refusals with reason code HC."
+    },
+    "PREV_N_REFUSED_LIMIT": {
+      "family": "refusals",
+      "definition": "Refusals with reason code LIMIT."
+    },
+    "PREV_N_REFUSED_SCOFR": {
+      "family": "refusals",
+      "definition": "Refusals with reason code SCOFR."
+    },
+    "PREV_N_REFUSED_OTHER": {
+      "family": "refusals",
+      "definition": "Refusals with any other reason, or none recorded."
+    },
+    "PREV_DAYS_SINCE_LAST_DECISION": {
+      "family": "timing",
+      "definition": "Days from the most recent earlier application to the current one."
+    },
+    "PREV_DAYS_SINCE_FIRST_DECISION": {
+      "family": "timing",
+      "definition": "Days from the earliest recorded application to the current one. The history stops at eight years.",
+      "warning": "Its distribution differs between train and test in fine detail, though not in ten coarse bands (stage 8, section 8.1)."
+    },
+    "PREV_HISTORY_REACHES_WINDOW_EDGE": {
+      "family": "timing",
+      "definition": "1 if the earliest recorded application is at least seven years old, so the true length of the relationship is unknown."
+    },
+    "PREV_N_DECIDED_12M": {
+      "family": "timing",
+      "definition": "Approved or refused applications in the last 365 days."
+    },
+    "PREV_MEAN_DAYS_BETWEEN_DECISIONS": {
+      "family": "timing",
+      "definition": "Days between the earliest and the most recent application, divided by the number of gaps. Missing with one application."
+    },
+    "PREV_HOUR_MEAN": {
+      "family": "timing",
+      "definition": "Average hour of day at which decided applications were made."
+    },
+    "PREV_N_APPROVED_CASH": {
+      "family": "product and channel",
+      "definition": "Approved cash loans."
+    },
+    "PREV_N_APPROVED_CONSUMER": {
+      "family": "product and channel",
+      "definition": "Approved consumer loans."
+    },
+    "PREV_N_APPROVED_REVOLVING": {
+      "family": "product and channel",
+      "definition": "Approved revolving loans."
+    },
+    "PREV_N_WALK_IN": {
+      "family": "product and channel",
+      "definition": "Decided applications of product type walk-in."
+    },
+    "PREV_N_X_SELL": {
+      "family": "product and channel",
+      "definition": "Decided applications of product type x-sell (cross-sold)."
+    },
+    "PREV_N_CHANNEL_AP_CASH": {
+      "family": "product and channel",
+      "definition": "Decided applications made through the AP+ (Cash loan) channel."
+    },
+    "PREV_N_CLIENT_TYPE_NEW": {
+      "family": "product and channel",
+      "definition": "Decided applications made when the applicant was recorded as a new client."
+    },
+    "PREV_N_REFUSED_CASH": {
+      "family": "product and channel",
+      "definition": "Refused cash loans."
+    },
+    "PREV_N_REFUSED_REVOLVING": {
+      "family": "product and channel",
+      "definition": "Refused revolving loans."
+    },
+    "PREV_COST_OF_CREDIT_MEAN": {
+      "family": "pricing and terms",
+      "definition": "Average over approved loans with a fixed term of total repayable (annuity x number of payments) divided by the amount granted."
+    },
+    "PREV_COST_OF_CREDIT_LAST": {
+      "family": "pricing and terms",
+      "definition": "The ratio for the most recent approved loan that has one.",
+      "warning": "Its distribution differs between train and test in fine detail, though not in ten coarse bands (stage 8, section 8.1)."
+    },
+    "PREV_RATE_PER_PAYMENT_MEAN": {
+      "family": "pricing and terms",
+      "definition": "Average over approved loans of (cost of credit - 1) divided by the number of payments: a rough rate that does not grow with the term."
+    },
+    "PREV_YIELD_LEVEL_MEAN": {
+      "family": "pricing and terms",
+      "definition": "Average yield group of approved loans on a scale of low_action 0, low_normal 1, middle 2, high 3."
+    },
+    "PREV_YIELD_LEVEL_LAST": {
+      "family": "pricing and terms",
+      "definition": "Yield level of the most recent approved loan that has one."
+    },
+    "PREV_N_APPROVED_HIGH_YIELD": {
+      "family": "pricing and terms",
+      "definition": "Approved loans in the high yield group."
+    },
+    "PREV_AMT_CREDIT_MEAN": {
+      "family": "pricing and terms",
+      "definition": "Average amount granted on approved applications."
+    },
+    "PREV_AMT_ANNUITY_MEAN": {
+      "family": "pricing and terms",
+      "definition": "Average annuity of approved applications."
+    },
+    "PREV_GRANTED_TO_REQUESTED_MEAN": {
+      "family": "pricing and terms",
+      "definition": "Average of amount granted divided by amount requested, over approved applications."
+    },
+    "PREV_DOWN_PAYMENT_RATE_MEAN": {
+      "family": "pricing and terms",
+      "definition": "Average down payment rate of approved applications that have one (consumer loans)."
+    },
+    "PREV_N_LOANS_ENDED": {
+      "family": "loan state",
+      "definition": "Approved loans with a termination date recorded."
+    },
+    "PREV_N_LOANS_RUNNING": {
+      "family": "loan state",
+      "definition": "Approved loans with no termination recorded at the current application."
+    },
+    "PREV_RUNNING_ANNUITY_SUM": {
+      "family": "loan state",
+      "definition": "Total annuity of loans still running: what the applicant already pays Home Credit each month."
+    },
+    "PREV_RUNNING_MAX_DAYS_REMAINING": {
+      "family": "loan state",
+      "definition": "Longest time to the planned last payment among loans still running.",
+      "warning": "Differs between train and test (stage 8, rule 1): keep with a warning: the values differ between the files, not how often the column is filled in. Report the model with and without it."
+    }
+  },
+  "dropped_in_screening": {
+    "PREV_N_UNUSED_OFFER": {
+      "reason": "no signal",
+      "definition": "Earlier applications approved and not taken up."
+    },
+    "PREV_SHARE_REFUSED": {
+      "reason": "redundant",
+      "definition": "Refused applications as a share of decided ones (approved or refused)."
+    },
+    "PREV_SHARE_REFUSED_24M": {
+      "reason": "redundant",
+      "definition": "Refusals as a share of decided applications, over the last 730 days."
+    },
+    "PREV_N_REFUSED_SCO": {
+      "reason": "no signal",
+      "definition": "Refusals with reason code SCO."
+    },
+    "PREV_DAYS_SINCE_LAST_APPROVAL": {
+      "reason": "no signal",
+      "definition": "Days from the most recent approval to the current application."
+    },
+    "PREV_N_APPROVED_12M": {
+      "reason": "no signal",
+      "definition": "Approved applications in the last 365 days."
+    },
+    "PREV_SHARE_APPROVED_CASH": {
+      "reason": "redundant",
+      "definition": "Approved cash loans as a share of approved applications."
+    },
+    "PREV_SHARE_WALK_IN": {
+      "reason": "redundant",
+      "definition": "Walk-in applications as a share of decided ones."
+    },
+    "PREV_COST_OF_CREDIT_MAX": {
+      "reason": "redundant",
+      "definition": "The highest such ratio."
+    },
+    "PREV_AMT_CREDIT_MAX": {
+      "reason": "redundant",
+      "definition": "Largest amount granted."
+    },
+    "PREV_N_LOANS_ENDED_EARLY": {
+      "reason": "no signal",
+      "definition": "Ended loans whose last payment date was more than 30 days before the planned one."
+    },
+    "PREV_RUNNING_CREDIT_SUM": {
+      "reason": "redundant",
+      "definition": "Total amount granted on loans still running."
+    }
+  },
+  "constants": {
+    "window_edge_days": 2556.75,
+    "refusal_windows_days": [
+      365,
+      730
+    ],
+    "early_repayment_days": 30,
+    "yield_level": {
+      "low_action": 0.0,
+      "low_normal": 1.0,
+      "middle": 2.0,
+      "high": 3.0
+    },
+    "main_refusal_reasons": [
+      "HC",
+      "LIMIT",
+      "SCO",
+      "SCOFR"
+    ],
+    "date_placeholder": 365243
+  },
+  "cleaning_rules": {
+    "1. rows not the last application for their contract, removed": 8475,
+    "2. repeated rows removed": 56719,
+    "3. text values that were XNA or XAP, set to missing": 6882007,
+    "4. DAYS_FIRST_DRAWING of 365243, set to missing": 934386,
+    "4. DAYS_FIRST_DUE of 365243, set to missing": 40645,
+    "4. DAYS_LAST_DUE_1ST_VERSION of 365243, set to missing": 93864,
+    "4. DAYS_LAST_DUE of 365243, set to missing": 211216,
+    "4. DAYS_TERMINATION of 365243, set to missing": 225908,
+    "5. AMT_APPLICATION of zero, set to missing": 335778,
+    "5. AMT_CREDIT of zero, set to missing": 285203,
+    "6. CNT_PAYMENT of zero, set to missing": 135816,
+    "7. SELLERPLACE_AREA of -1, set to missing": 708441,
+    "8. negative down payments, set to missing": 2
+  },
+  "most_recent_rule": "The latest DAYS_DECISION, with ties on the same day broken by the higher SK_ID_PREV.",
+  "properties_verified": [
+    "Each applicant's features depend on that applicant's rows only (section 7.4).",
+    "No function uses the target, and none contains a number estimated from the data.",
+    "An independent rebuild of 2,598 applicants from the raw rows agrees on all 53 features (section 7.2).",
+    "The current application is not in the table, and nothing is dated on or after it apart from planned end dates (stage 4).",
+    "Every column passes the train-test supply test (section 3.3)."
+  ],
+  "selection_note": "Five features were dropped using development-set outcomes and one was added (RATE_PER_PAYMENT_MEAN). The holdout was not used.",
+  "code": "src/features/previous_application.py",
+  "versions": {
+    "python": "3.13.5",
+    "pandas": "3.0.6",
+    "numpy": "2.5.3"
+  }
+}

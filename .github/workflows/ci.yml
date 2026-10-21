@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    # the 64 tests that need no Kaggle files: validation, preprocessing, features, models, serving and the API;
+    # the 7 that need data/raw are skipped here and run locally
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+      - name: Install
+        run: pip install -r requirements.txt
+      - name: Test
+        env:
+          SKIP_DATA_TESTS: '1'
+          MLFLOW_DISABLE_AGENT_HINT: '1'
+        run: python -m pytest
+
+  docker:
+    # the scoring service still builds, starts, and answers
+    runs-on: ubuntu-latest
+    needs: tests
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: docker build -t home-credit-api .
+      - name: Start and call
+        run: |
+          docker run -d -p 8000:8000 --name api home-credit-api
+          for i in $(seq 1 30); do curl -sf http://localhost:8000/ && break; sleep 2; done
+          curl -sf -X POST http://localhost:8000/predict -H 'Content-Type: application/json' \
+               -d '{"application": {"SK_ID_CURR": 100001, "AMT_CREDIT": 568800, "AMT_ANNUITY": 20560.5, "EXT_SOURCE_2": 0.79, "EXT_SOURCE_3": 0.16}}'
+      - name: Logs on failure
+        if: failure()
+        run: docker logs api

@@ -1,0 +1,25 @@
+# environment
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+
+# data: download from Kaggle into data/raw (see README); data/processed is rebuilt by the pipeline
+data/raw/
+data/processed/*.parquet
+data/rebuild/
+
+# caches and run outputs, all rebuilt by the notebooks or the pipeline
+artifacts/cv_cache*/
+artifacts/tune_cache/
+artifacts/pipeline/
+artifacts/models/
+artifacts/mlflow/
+artifacts/submissions/
+catboost_info/
+mlruns/
+*.log
+
+# kept: the saved models of each notebook (artifacts/final_model, artifacts/model_with_*), artifacts/reports,
+# and the served model in src/serving/model, which the tests and the Docker image need

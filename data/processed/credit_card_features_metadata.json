@@ -1,0 +1,134 @@
+{
+  "description": "Features from the monthly balances of earlier Home Credit credit cards, one row per applicant. Built in notebooks/11_credit_card_eda_features.ipynb.",
+  "source": "data/raw/credit_card_balance.csv",
+  "tables": {
+    "train": {
+      "file": "credit_card_train_features.parquet",
+      "rows": 307511,
+      "sha256": "fe7f481921d08a0c2540f3e754a6abb02a52b8560c6c9021186e849424f85beb",
+      "row_order": "application_train_features.parquet"
+    },
+    "test": {
+      "file": "credit_card_test_features.parquet",
+      "rows": 48744,
+      "sha256": "a4818cd37f8c4bab5901d04468616f401c625f56067c3dd7abd36fbe3e33db6a",
+      "row_order": "application_test_features.parquet"
+    }
+  },
+  "index": "SK_ID_CURR",
+  "applicants_without_a_card": "Every feature is missing.",
+  "features": {
+    "CC_MONTHS_SINCE_LATEST_ROW": {
+      "family": "volume",
+      "definition": "Months from the latest row of any card to the application."
+    },
+    "CC_UTIL_MAX": {
+      "family": "utilisation",
+      "definition": "The highest such utilisation."
+    },
+    "CC_SHARE_OVER_LIMIT": {
+      "family": "utilisation",
+      "definition": "Share of months with a limit in which the balance exceeded it."
+    },
+    "CC_SHARE_WITH_BALANCE": {
+      "family": "utilisation",
+      "definition": "Share of months with a balance above zero."
+    },
+    "CC_BALANCE_LATEST": {
+      "family": "utilisation",
+      "definition": "Balance in each card's latest row, if within 3 months; summed over cards."
+    },
+    "CC_LIMIT_LATEST": {
+      "family": "limit",
+      "definition": "Limit in each card's latest row, if within 3 months; summed over cards.",
+      "warning": "Differs between train and test (stage 8, rule 1): keep with a warning: the limits on offer are the same in both files; the difference is in how many cards have a recent row."
+    },
+    "CC_LIMIT_GROWTH": {
+      "family": "limit",
+      "definition": "Latest limit above zero over the first limit above zero; the highest over cards."
+    },
+    "CC_SHARE_ATM": {
+      "family": "cash",
+      "definition": "Share of months with a cash withdrawal. A missing withdrawal amount counts as none.",
+      "warning": "Its distribution differs between train and test in fine detail (stage 8)."
+    },
+    "CC_N_ATM_12M": {
+      "family": "cash",
+      "definition": "Number of cash withdrawals in the last 12 months."
+    },
+    "CC_SHARE_UNDER_MIN": {
+      "family": "payments",
+      "definition": "Share of due months (a minimum above 1 recorded) in which less than the minimum minus 1 was paid."
+    },
+    "CC_SHARE_PAID_NOTHING": {
+      "family": "payments",
+      "definition": "Share of due months in which nothing was paid."
+    },
+    "CC_PAY_TO_BALANCE_MEAN": {
+      "family": "payments",
+      "definition": "Average over months with a balance of the amount paid over the balance, capped at 1."
+    },
+    "CC_PAY_TO_MIN_MEAN": {
+      "family": "payments",
+      "definition": "Average over due months of the amount paid over the minimum, capped at 5."
+    },
+    "CC_MAX_DPD": {
+      "family": "arrears",
+      "definition": "The largest days past due under the tolerance rule."
+    },
+    "CC_N_DEMAND": {
+      "family": "arrears",
+      "definition": "Cards ever in status Demand.",
+      "warning": "Differs between train and test (stage 8, rule 1): keep with a warning: a card in Demand is rare (12 development applicants) and more than twice as common in test."
+    }
+  },
+  "dropped_in_screening": {
+    "CC_N_CARDS": {
+      "reason": "no signal",
+      "definition": "Cards with monthly rows. 0 when there are none."
+    },
+    "CC_MONTHS_BACK": {
+      "reason": "records calendar time",
+      "definition": "How far back the card record goes, in months."
+    },
+    "CC_UTIL_MEAN": {
+      "reason": "redundant with another candidate",
+      "definition": "Average over months of balance over limit, where the limit is above zero, never below zero."
+    },
+    "CC_UTIL_LATEST": {
+      "reason": "redundant with another candidate",
+      "definition": "Utilisation in each card's latest row, if within 3 months; the highest over cards."
+    },
+    "CC_UTIL_MEAN_12M": {
+      "reason": "redundant with another candidate",
+      "definition": "Average utilisation over the last 12 months."
+    },
+    "CC_ATM_TO_LIMIT_MEAN": {
+      "reason": "redundant with another candidate",
+      "definition": "Average over months with a limit of cash withdrawn over the limit."
+    },
+    "CC_SHARE_ARREARS": {
+      "reason": "redundant with another candidate",
+      "definition": "Share of months past due under the tolerance rule (SK_DPD_DEF above 0)."
+    }
+  },
+  "constants": {
+    "recent_months": 12,
+    "latest_window_months": 3,
+    "pay_to_min_cap": 5,
+    "min_due_above": 1
+  },
+  "shift_note": "Test applicants hold cards more often (34% against 28%) and started them later relative to the application. A model given all 22 candidates told the files apart at 0.78.",
+  "properties_verified": [
+    "Each applicant's features depend on that applicant's rows only.",
+    "An independent rebuild of 521 applicants agrees on all 22 features.",
+    "No row is dated on or after the application."
+  ],
+  "selection_note": "One feature was dropped using development outcomes (rule 3). The holdout was not used.",
+  "code": "src/features/credit_card.py",
+  "versions": {
+    "python": "3.13.5",
+    "pandas": "3.0.6",
+    "numpy": "2.5.3"
+  }
+}

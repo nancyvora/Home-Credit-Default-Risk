@@ -1,0 +1,259 @@
+{
+  "description": "Features from the credit bureau table, one row per applicant. Built in notebooks/03_bureau_eda_features.ipynb.",
+  "source": "data/raw/bureau.csv",
+  "not_used": {
+    "bureau_balance.csv": "Monthly history exists for about a third of bureau credits in train and nearly all in test, and having it is related to default inside train (sections 1.6 and 2.6).",
+    "AMT_ANNUITY": "In train it is present only where bureau_balance history exists; in test it is present for most credits (section 3.4).",
+    "CREDIT_CURRENCY": "Used only to blank the amounts of the 0.08% of credits not in currency 1 (rule 4).",
+    "CNT_CREDIT_PROLONG": "Almost no relation to default, and five times rarer in test (stages 3 and 5)."
+  },
+  "tables": {
+    "train": {
+      "file": "bureau_train_features.parquet",
+      "rows": 307511,
+      "sha256": "dc37c48d551b43e725687c005e0da3cf3ec28d4df00c04ce5f6c50be0f4ac643",
+      "row_order": "application_train_features.parquet"
+    },
+    "test": {
+      "file": "bureau_test_features.parquet",
+      "rows": 48744,
+      "sha256": "b1b4d462e413c0c974fe49e22ff04c93ba5a314647e42eb61dc515ff3af3009c",
+      "row_order": "application_test_features.parquet"
+    }
+  },
+  "index": "SK_ID_CURR",
+  "applicants_without_a_bureau_record": "BUREAU_N_CREDITS is 0 and every other feature is missing.",
+  "features": {
+    "BUREAU_N_CREDITS": {
+      "family": "volume",
+      "definition": "Number of credits in the bureau. 0 when the applicant has no bureau record, in which case every other feature is missing."
+    },
+    "BUREAU_N_LIVE": {
+      "family": "volume",
+      "definition": "Credits that are active and were updated within the last year."
+    },
+    "BUREAU_N_FINISHED": {
+      "family": "volume",
+      "definition": "Credits that are closed, or active but not updated for over a year."
+    },
+    "BUREAU_N_SOLD_OR_BAD": {
+      "family": "volume",
+      "definition": "Credits sold to a collector or written off as bad debt."
+    },
+    "BUREAU_SHARE_LIVE": {
+      "family": "volume",
+      "definition": "N_LIVE divided by N_CREDITS."
+    },
+    "BUREAU_DAYS_SINCE_LAST_OPENED": {
+      "family": "recency",
+      "definition": "Days from the opening of the most recent credit to the application.",
+      "warning": "Its distribution differs between train and test in fine detail, though not in ten coarse bands (stage 8, section 8.1)."
+    },
+    "BUREAU_DAYS_SINCE_FIRST_OPENED": {
+      "family": "recency",
+      "definition": "Days from the opening of the oldest credit to the application. The bureau history stops at eight years.",
+      "warning": "Its distribution differs between train and test in fine detail, though not in ten coarse bands (stage 8, section 8.1)."
+    },
+    "BUREAU_HISTORY_REACHES_WINDOW_EDGE": {
+      "family": "recency",
+      "definition": "1 if the oldest credit is at least seven years old, so the true length of history is unknown."
+    },
+    "BUREAU_N_OPENED_3M": {
+      "family": "recency",
+      "definition": "Credits opened in the 91 days before the application."
+    },
+    "BUREAU_N_OPENED_6M": {
+      "family": "recency",
+      "definition": "Credits opened in the 183 days before the application."
+    },
+    "BUREAU_N_OPENED_12M": {
+      "family": "recency",
+      "definition": "Credits opened in the 365 days before the application."
+    },
+    "BUREAU_N_OPENED_24M": {
+      "family": "recency",
+      "definition": "Credits opened in the 730 days before the application."
+    },
+    "BUREAU_MEAN_DAYS_BETWEEN_OPENINGS": {
+      "family": "recency",
+      "definition": "Days between the oldest and the most recent credit, divided by the number of gaps. Missing with one credit."
+    },
+    "BUREAU_DAYS_SINCE_LAST_CLOSED": {
+      "family": "recency",
+      "definition": "Days since the most recent closing of a closed credit."
+    },
+    "BUREAU_DAYS_SINCE_LAST_UPDATE": {
+      "family": "recency",
+      "definition": "Days since the bureau last received information on any of the credits.",
+      "warning": "Its distribution differs between train and test in fine detail, though not in ten coarse bands (stage 8, section 8.1)."
+    },
+    "BUREAU_N_CREDIT_CARDS": {
+      "family": "type",
+      "definition": "Credit cards."
+    },
+    "BUREAU_N_MORTGAGES": {
+      "family": "type",
+      "definition": "Mortgages."
+    },
+    "BUREAU_N_MICROLOANS": {
+      "family": "type",
+      "definition": "Microloans.",
+      "warning": "About twice as common among test applicants as among train applicants (stage 8, rule 1). Kept as a real difference between the two groups; report the model with and without it."
+    },
+    "BUREAU_N_LIVE_CREDIT_CARDS": {
+      "family": "type",
+      "definition": "Live credit cards."
+    },
+    "BUREAU_N_LIVE_LOANS": {
+      "family": "type",
+      "definition": "Live credits that are not credit cards."
+    },
+    "BUREAU_N_LIVE_MICROLOANS": {
+      "family": "type",
+      "definition": "Live microloans.",
+      "warning": "About twice as common among test applicants as among train applicants (stage 8, rule 1). Kept as a real difference between the two groups; report the model with and without it."
+    },
+    "BUREAU_SHARE_CREDIT_CARDS": {
+      "family": "type",
+      "definition": "N_CREDIT_CARDS divided by N_CREDITS."
+    },
+    "BUREAU_N_OVERDUE_NOW": {
+      "family": "overdue",
+      "definition": "Credits with days overdue or an amount overdue above zero at the application."
+    },
+    "BUREAU_N_EVER_OVERDUE": {
+      "family": "overdue",
+      "definition": "Credits whose largest overdue amount ever is above zero. A blank counts as never overdue."
+    },
+    "BUREAU_N_EVER_OVERDUE_1000_24M": {
+      "family": "overdue",
+      "definition": "Credits opened in the last 730 days whose largest overdue amount ever is above 1,000."
+    },
+    "BUREAU_DAYS_SINCE_LAST_OVERDUE_CREDIT_OPENED": {
+      "family": "overdue",
+      "definition": "Days since the opening of the most recent credit whose largest overdue amount ever is above 1,000."
+    },
+    "BUREAU_LIVE_DEBT_MAX": {
+      "family": "debt and amounts",
+      "definition": "Largest recorded debt on a single live credit."
+    },
+    "BUREAU_LIVE_LOAN_AMOUNT_SUM": {
+      "family": "debt and amounts",
+      "definition": "Total credit amount of live loans (not cards) that have a recorded debt."
+    },
+    "BUREAU_LIVE_LOAN_SHARE_OWED": {
+      "family": "debt and amounts",
+      "definition": "Total debt on those loans divided by their total credit amount."
+    },
+    "BUREAU_LIVE_LOAN_MAX_SHARE_OWED": {
+      "family": "debt and amounts",
+      "definition": "The largest debt-to-amount ratio among those loans."
+    },
+    "BUREAU_N_LIVE_ZERO_DEBT": {
+      "family": "debt and amounts",
+      "definition": "Live credits with a recorded debt of exactly zero."
+    },
+    "BUREAU_N_LIVE_DEBT_BLANK": {
+      "family": "debt and amounts",
+      "definition": "Live credits with no debt recorded."
+    },
+    "BUREAU_CARD_LIMIT_SUM": {
+      "family": "debt and amounts",
+      "definition": "Total credit limit of live cards that have a positive limit and a recorded debt."
+    },
+    "BUREAU_CARD_USE_OF_LIMIT": {
+      "family": "debt and amounts",
+      "definition": "Debt on those cards divided by debt plus limit."
+    },
+    "BUREAU_AMOUNT_MAX": {
+      "family": "debt and amounts",
+      "definition": "Largest credit amount of any credit."
+    },
+    "BUREAU_AMOUNT_MEDIAN": {
+      "family": "debt and amounts",
+      "definition": "Median credit amount across all credits."
+    },
+    "BUREAU_LIVE_MAX_DAYS_REMAINING": {
+      "family": "term",
+      "definition": "Longest remaining planned term among live credits whose planned end is in the future.",
+      "warning": "Its distribution differs between train and test in fine detail, though not in ten coarse bands (stage 8, section 8.1)."
+    },
+    "BUREAU_N_LIVE_NO_END_DATE": {
+      "family": "term",
+      "definition": "Live credits with no planned end date (mostly credit cards)."
+    },
+    "BUREAU_SHARE_CLOSED_LATE": {
+      "family": "term",
+      "definition": "Share of closed credits that closed more than 30 days after their planned end."
+    },
+    "BUREAU_SHARE_CLOSED_EARLY": {
+      "family": "term",
+      "definition": "Share of closed credits that closed more than 30 days before their planned end."
+    }
+  },
+  "dropped_in_screening": {
+    "BUREAU_DAYS_SINCE_LAST_LIVE_OPENED": {
+      "reason": "redundant",
+      "definition": "Days since the most recent live credit was opened."
+    },
+    "BUREAU_N_CAR_LOANS": {
+      "reason": "no signal",
+      "definition": "Car loans."
+    },
+    "BUREAU_N_TYPES": {
+      "reason": "no signal",
+      "definition": "Number of different credit types held."
+    },
+    "BUREAU_N_EVER_OVERDUE_1000": {
+      "reason": "redundant",
+      "definition": "Credits whose largest overdue amount ever is above 1,000."
+    },
+    "BUREAU_SHARE_EVER_OVERDUE_1000": {
+      "reason": "redundant",
+      "definition": "N_EVER_OVERDUE_1000 divided by N_CREDITS."
+    },
+    "BUREAU_LIVE_DEBT_SUM": {
+      "reason": "redundant",
+      "definition": "Total recorded debt on live credits."
+    }
+  },
+  "constants": {
+    "live_within_days": 365,
+    "window_edge_days": 2556.75,
+    "overdue_floor": 1000,
+    "recent_windows_days": {
+      "3M": 91,
+      "6M": 183,
+      "12M": 365,
+      "24M": 730
+    },
+    "far_future_days": 10957.5
+  },
+  "cleaning_rules": {
+    "1. repeated rows removed": 2059,
+    "2. rows with status grouped as Sold or bad debt": 6545,
+    "3. rows with type grouped as Other": 4120,
+    "4. rows in another currency, amounts set to missing": 1408,
+    "5. AMT_ANNUITY values dropped": 489417,
+    "6. planned end more than 30 years ahead, set to missing": 42661,
+    "7. DAYS_CREDIT_ENDDATE before the credit was opened, set to missing": 164,
+    "7. DAYS_ENDDATE_FACT before the credit was opened, set to missing": 20,
+    "7. DAYS_CREDIT_UPDATE before the credit was opened, set to missing": 135,
+    "8. negative debt set to zero": 8337,
+    "9. credit limit of zero or below, set to missing": 1048691,
+    "10. rows updated after the application, state columns set to missing": 17
+  },
+  "properties_verified": [
+    "Each applicant's features depend on that applicant's rows only (section 7.4).",
+    "No function uses the target, and none contains a number estimated from the data.",
+    "An independent rebuild of 2,611 applicants from the raw rows agrees on all 46 features (section 7.2).",
+    "Nothing recorded after the application date is used (stage 4)."
+  ],
+  "selection_note": "Two features were dropped using development-set outcomes and one was added (LIVE_LOAN_MAX_SHARE_OWED). The holdout was not used.",
+  "code": "src/features/bureau.py",
+  "versions": {
+    "python": "3.13.5",
+    "pandas": "3.0.6",
+    "numpy": "2.5.3"
+  }
+}

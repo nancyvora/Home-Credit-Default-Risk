@@ -1,0 +1,141 @@
+{
+  "description": "Features from the monthly balances of earlier point-of-sale and cash loans with Home Credit, one row per applicant. Built in notebooks/09_pos_cash_eda_features.ipynb.",
+  "source": "data/raw/POS_CASH_balance.csv",
+  "tables": {
+    "train": {
+      "file": "pos_cash_train_features.parquet",
+      "rows": 307511,
+      "sha256": "0dca7c0005fdf1817916fa5499bd2941cf853a8bbc83a0b7231ccce90b08577e",
+      "row_order": "application_train_features.parquet"
+    },
+    "test": {
+      "file": "pos_cash_test_features.parquet",
+      "rows": 48744,
+      "sha256": "bc45fa074ecf755e0baaabb74dcfdbc3cb8c4c7fb94ae6e864603ca3a87c8181",
+      "row_order": "application_test_features.parquet"
+    }
+  },
+  "index": "SK_ID_CURR",
+  "applicants_without_rows": "Every feature is missing.",
+  "features": {
+    "POS_MONTHS_SINCE_LATEST_ROW": {
+      "family": "volume",
+      "definition": "Months from the latest row of any loan to the application."
+    },
+    "POS_MAX_DPD_RAW": {
+      "family": "arrears",
+      "definition": "The largest days past due without the tolerance rule (SK_DPD)."
+    },
+    "POS_N_LOANS_ARREARS": {
+      "family": "arrears",
+      "definition": "Loans ever in arrears under the tolerance rule."
+    },
+    "POS_MONTHS_ARREARS_12M": {
+      "family": "arrears",
+      "definition": "Months in arrears in the last 12."
+    },
+    "POS_MONTHS_SINCE_ARREARS": {
+      "family": "arrears",
+      "definition": "Months since the latest month in arrears. Missing if never in arrears."
+    },
+    "POS_N_ARREARS_AT_APPLICATION": {
+      "family": "arrears",
+      "definition": "Running loans in arrears in their latest row. A loan is running if its latest row is Active and no more than 3 months before the application."
+    },
+    "POS_N_RETURNED": {
+      "family": "status",
+      "definition": "Loans ever in status Returned to the store."
+    },
+    "POS_SHARE_FINISHED_EARLY": {
+      "family": "status",
+      "definition": "Share of completed loans that ran for under three quarters of their first term on record."
+    },
+    "POS_SHARE_TERM_CHANGED": {
+      "family": "status",
+      "definition": "Share of loans whose term changed."
+    },
+    "POS_N_RUNNING": {
+      "family": "commitment",
+      "definition": "Running loans (see N_ARREARS_AT_APPLICATION)."
+    },
+    "POS_MAX_SHARE_LEFT": {
+      "family": "commitment",
+      "definition": "The largest share of its term still to pay, on any running loan.",
+      "warning": "Differs between train and test (stage 8, rule 1): keep with a warning: test applicants are further through their running loans, while the column is filled in equally often in both files."
+    },
+    "POS_N_PAST_TERM": {
+      "family": "commitment",
+      "definition": "Running loans with no instalments left: past their last scheduled instalment and not yet closed."
+    }
+  },
+  "dropped_in_screening": {
+    "POS_N_LOANS": {
+      "reason": "redundant with a saved feature",
+      "definition": "Loans with monthly rows. 0 when there are none.",
+      "the saved feature it repeats": "PREV_N_APPROVED"
+    },
+    "POS_N_MONTHS": {
+      "reason": "redundant with a saved feature",
+      "definition": "Months on record, over all loans.",
+      "the saved feature it repeats": "INST_N_INSTALMENTS"
+    },
+    "POS_MONTHS_BACK": {
+      "reason": "redundant with a saved feature",
+      "definition": "How far back the record goes, in months.",
+      "the saved feature it repeats": "PREV_DAYS_SINCE_FIRST_DECISION"
+    },
+    "POS_SHARE_MONTHS_ARREARS": {
+      "reason": "redundant with another candidate",
+      "definition": "Share of months with days past due under the tolerance rule (SK_DPD_DEF above 0)."
+    },
+    "POS_MAX_DPD": {
+      "reason": "redundant with another candidate",
+      "definition": "The largest days past due under the tolerance rule."
+    },
+    "POS_N_CALLED_IN": {
+      "reason": "no signal",
+      "definition": "Loans ever in status Demand or Amortized debt."
+    },
+    "POS_INSTALMENTS_LEFT": {
+      "reason": "redundant with a saved feature",
+      "definition": "Instalments still to pay on running loans, in total.",
+      "the saved feature it repeats": "PREV_RUNNING_MAX_DAYS_REMAINING"
+    },
+    "POS_MAX_INSTALMENTS_LEFT": {
+      "reason": "redundant with another candidate",
+      "definition": "The most instalments still to pay on any one running loan.",
+      "the saved feature it repeats": "PREV_RUNNING_MAX_DAYS_REMAINING"
+    },
+    "POS_MONTHS_SINCE_LAST_START": {
+      "reason": "no signal",
+      "definition": "Months since the most recent loan's first row."
+    }
+  },
+  "constants": {
+    "recent_months": 12,
+    "latest_window_months": 3,
+    "early_share": 0.75,
+    "called_in_statuses": [
+      "Demand",
+      "Amortized debt"
+    ]
+  },
+  "rules": [
+    "Arrears are measured with SK_DPD_DEF, which ignores small debts; SK_DPD also counts small balances left after a loan ended.",
+    "A loan's state at the application is its latest row; month -1 exists for only some loans (stage 4)."
+  ],
+  "properties_verified": [
+    "Each applicant's features depend on that applicant's rows only (7.4).",
+    "An independent rebuild of 500 applicants agrees on all 21 features (7.2).",
+    "No row is dated on or after the application (stage 1); month 0 does not exist.",
+    "The table passes the train-test supply test (1.4, 3.4)."
+  ],
+  "selection_note": "Two features were dropped using development outcomes (rule 3). The holdout was not used.",
+  "expectation": "Stage 8 expects a gain at or below the noise floor when these are added to the model of notebook 08.",
+  "code": "src/features/pos_cash.py",
+  "versions": {
+    "python": "3.13.5",
+    "pandas": "3.0.6",
+    "numpy": "2.5.3"
+  }
+}

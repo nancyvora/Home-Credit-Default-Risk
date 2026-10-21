@@ -1,0 +1,41 @@
+# The full environment: notebooks, pipeline (scripts/run_pipeline.py), tests. Python 3.13.
+# Pinned to the versions every result in the project was produced with; the saved model's metadata records the same
+# versions of numpy, pandas, scikit-learn and lightgbm, and a different version can change the model.
+# The API container needs much less: requirements-serving.txt.
+
+# data
+numpy==2.5.3
+pandas==3.0.6
+pyarrow==25.0.1
+scipy==1.18.1
+
+# models
+scikit-learn==1.9.1
+lightgbm==4.7.0
+optuna==5.0.0
+joblib==1.6.0
+xgboost==3.4.1              # compared with LightGBM in notebook 02
+catboost==1.2.10            # compared with LightGBM in notebook 02
+imbalanced-learn==0.14.2    # resampling compared in notebook 02
+
+# validation, tracking, config
+great_expectations==1.23.2
+mlflow==3.16.1
+PyYAML==6.0.3
+
+# plots (notebooks)
+matplotlib==3.11.2
+seaborn==0.13.2
+
+# serving
+fastapi==0.142.2
+uvicorn==0.54.0
+pydantic==2.13.5
+gradio==6.30.0
+
+# tests and notebooks
+pytest==9.1.1
+httpx==0.28.1               # FastAPI's test client
+ipykernel==7.4.0
+nbconvert==7.17.1
+nbformat==5.11.1
