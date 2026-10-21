@@ -1,5 +1,7 @@
 # Home Credit Default Risk
 
+[![CI](https://github.com/nancyvora/Home-Credit-Default-Risk/actions/workflows/ci.yml/badge.svg)](https://github.com/nancyvora/Home-Credit-Default-Risk/actions/workflows/ci.yml)
+
 Predicting which loan applicants will have payment difficulties, from their application and their credit history:
 [Kaggle: Home Credit Default Risk](https://www.kaggle.com/competitions/home-credit-default-risk).
 
