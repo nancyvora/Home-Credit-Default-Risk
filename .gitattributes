@@ -1,0 +1,6 @@
+# Saved models are checked against a SHA-256 checksum when they load, so git must store them byte for byte,
+# without converting line endings (LightGBM writes some lines with \r\n on Windows).
+src/serving/model/* -text
+artifacts/**/model.txt -text
+*.parquet binary
+*.joblib binary
