@@ -8,6 +8,7 @@ import json
 from functools import lru_cache
 from pathlib import Path
 
+from src.app.history import make_history
 from src.serving.inference import HISTORY_TABLES, MODEL_DIR, load_model, predict
 
 EDUCATION = ['Lower secondary', 'Secondary / secondary special', 'Incomplete higher', 'Higher education', 'Academic degree']
@@ -34,8 +35,11 @@ def _reasons(result):
 
 
 def score_form(age_years, years_employed, gender, education, contract_type, income, credit, annuity, goods_price, ext_1, ext_2, ext_3,
-               ext_1_missing=False, ext_2_missing=False, ext_3_missing=False):
-    """The form's fields on top of a typical applicant, with no credit history, scored by the same predict().
+               ext_1_missing=False, ext_2_missing=False, ext_3_missing=False,
+               bureau_closed=0, bureau_open=0, share_owed=50, overdue_now=False, hc_loans=0, hc_refused=0, share_late=0,
+               has_card=False, card_balance_pct=30, card_atm_12m=0):
+    """The form's fields on top of a typical applicant, and a made-up credit history from the history answers
+    (``src/app/history.py``; none by default), scored by the same predict().
 
     An external score marked as not available is sent as missing, as it is for many real applicants (score 1 for 56% of
     them, score 3 for 20%); the model was trained with these gaps and reads them as information.
@@ -45,7 +49,9 @@ def score_form(age_years, years_employed, gender, education, contract_type, inco
     application = {**typical_applicant(), 'SK_ID_CURR': 0, 'DAYS_BIRTH': days(age_years), 'DAYS_EMPLOYED': days(years_employed), 'CODE_GENDER': gender,
                    'NAME_EDUCATION_TYPE': education, 'NAME_CONTRACT_TYPE': contract_type, 'AMT_INCOME_TOTAL': income, 'AMT_CREDIT': credit,
                    'AMT_ANNUITY': annuity, 'AMT_GOODS_PRICE': goods_price, 'EXT_SOURCE_1': ext_1, 'EXT_SOURCE_2': ext_2, 'EXT_SOURCE_3': ext_3}
-    result = predict(application)
+    history = make_history(bureau_closed, bureau_open, share_owed, overdue_now, hc_loans, hc_refused, share_late,
+                           has_card, card_balance_pct, card_atm_12m)
+    result = predict(application, history)
     return _summary(result), _reasons(result)
 
 
@@ -86,8 +92,8 @@ of the defaults; its average prediction is 8.12% against 8.07% observed.
 **The reasons.** Each score lists the features that moved the risk most, as odds multipliers: above 1 raises the risk,
 below 1 lowers it. They are the model's exact contributions (TreeSHAP), scaled by the calibration.
 
-**Limits.** A demonstration, not a lending decision. The quick form scores an applicant with no credit history, and gives
-every field it does not ask for a typical value. Applicants with an unpaid instalment on record are under-predicted
+**Limits.** A demonstration, not a lending decision. The quick form gives every field it does not ask for a typical value,
+and builds a short made-up credit history from the history answers; a real credit file holds far more detail. Applicants with an unpaid instalment on record are under-predicted
 (about 20% predicted against 27% observed), though ranked correctly.
 
 Code, notebooks and tests: [github.com/nancyvora/Home-Credit-Default-Risk](https://github.com/nancyvora/Home-Credit-Default-Risk)
@@ -104,8 +110,8 @@ def build_ui(wrap=None):
     with gr.Blocks(title='Home Credit default risk') as demo:
         gr.Markdown('# Home Credit default risk\nProbability that a loan applicant will have payment difficulties, with the reasons.')
         with gr.Tab('Quick check'):
-            gr.Markdown('A few application fields. Every other field takes a typical value, and the applicant is scored as having '
-                        'no credit history (no bureau records, no earlier applications).')
+            gr.Markdown('A few application fields; every other field takes a typical value. Open **Credit history** to give the '
+                        'applicant a track record: without it they are scored as having none.')
             with gr.Row():
                 with gr.Column():
                     age = gr.Number(label='Age (years)', value=45)
@@ -127,13 +133,34 @@ def build_ui(wrap=None):
                     ext_2_missing = gr.Checkbox(label='Score 2 not available', value=False)
                     ext_3 = gr.Slider(0, 1, value=0.5, label='External score 3', info='missing for 20% of real applicants')
                     ext_3_missing = gr.Checkbox(label='Score 3 not available', value=False)
+            with gr.Accordion('Credit history (optional)', open=False):
+                gr.Markdown('A short, made-up history is built from these answers and scored like real records. Leave everything at 0 '
+                            'for an applicant with no history.')
+                with gr.Row():
+                    with gr.Column():
+                        gr.Markdown('**At other lenders** (credit bureau)')
+                        bureau_closed = gr.Number(label='Loans repaid and closed', value=0, precision=0, minimum=0, maximum=15)
+                        bureau_open = gr.Number(label='Loans still open', value=0, precision=0, minimum=0, maximum=10)
+                        share_owed = gr.Slider(0, 100, value=50, step=5, label='Still owed on open loans (%)')
+                        overdue_now = gr.Checkbox(label='Currently overdue on a loan', value=False)
+                    with gr.Column():
+                        gr.Markdown('**At Home Credit**')
+                        hc_loans = gr.Number(label='Earlier loans (12 monthly instalments each)', value=0, precision=0, minimum=0, maximum=10)
+                        share_late = gr.Slider(0, 100, value=0, step=5, label='Instalments paid more than 5 days late (%)')
+                        hc_refused = gr.Number(label='Applications refused', value=0, precision=0, minimum=0, maximum=10)
+                    with gr.Column():
+                        gr.Markdown('**Home Credit credit card**')
+                        has_card = gr.Checkbox(label='Has a card', value=False)
+                        card_balance = gr.Slider(0, 150, value=30, step=5, label='Balance, % of the limit')
+                        card_atm = gr.Number(label='Cash withdrawals in the last 12 months', value=0, precision=0, minimum=0, maximum=120)
             button = gr.Button('Score', variant='primary')
             result = gr.Textbox(label='Result', lines=2)
             reasons = gr.Dataframe(headers=REASON_HEADERS, label='Main reasons')
             button.click(form_fn, [age, employed, gender, education, contract, income, credit, annuity, goods, ext_1, ext_2, ext_3,
-                                   ext_1_missing, ext_2_missing, ext_3_missing], [result, reasons])
-        with gr.Tab('Full application (JSON)'):
-            gr.Markdown(f'The request the API takes: one application row, and the applicant\'s records in any of the history tables '
+                                   ext_1_missing, ext_2_missing, ext_3_missing, bureau_closed, bureau_open, share_owed, overdue_now,
+                                   hc_loans, hc_refused, share_late, has_card, card_balance, card_atm], [result, reasons])
+        with gr.Tab('For developers (JSON)'):
+            gr.Markdown(f'The request the API (`POST /predict`) takes: one application row, and the applicant\'s records in any of the history tables '
                         f'({", ".join(HISTORY_TABLES)}), with the columns of the Kaggle files. A field left out is treated as missing. '
                         'The example is made up.')
             request = gr.Code(value=example, language='json', label='Request')

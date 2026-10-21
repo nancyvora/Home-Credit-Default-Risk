@@ -104,6 +104,22 @@ def test_form_sends_an_unavailable_external_score_as_missing():
     assert shown.get('EXT_SOURCE_1', None) is None                                 # and score 1 is missing, not 0.5
 
 
+def test_form_history_moves_the_risk_the_right_way():
+    from src.app.history import make_history
+    from src.utils.validate_data import table_columns, validate_table
+    args = (45, 6, 'F', 'Higher education', 'Cash loans', 180000, 600000, 27000, 500000, 0.5, 0.6, 0.5, False, False, False)
+    risk = lambda **h: float(score_form(*args, **h)[0].split(':')[1].split('%')[0])
+    clean = dict(bureau_closed=3, bureau_open=1, share_owed=30, hc_loans=2)
+    assert risk(**clean) < risk()                                                   # a clean track record lowers the risk
+    assert risk(**clean, share_late=30) > risk(**clean)                             # late payments raise it
+    assert risk(**clean, overdue_now=True) > risk(**clean)
+    assert risk(**clean, has_card=True, card_balance_pct=110, card_atm_12m=40) > risk(**clean)
+    full = make_history(3, 2, 60, True, 3, 2, 25, True, 110, 30)
+    for table, records in full.items():                                             # the made-up records obey the rules real ones do
+        passed, failed = validate_table(table, pd.DataFrame(records)[table_columns(table)])
+        assert passed, (table, failed)
+
+
 @pytest.mark.data
 @pytest.mark.slow
 def test_live_scores_equal_batch_scores():

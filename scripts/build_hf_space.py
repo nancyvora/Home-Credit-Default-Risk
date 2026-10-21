@@ -20,7 +20,7 @@ SPACE = ROOT / 'deploy' / 'huggingface'
 
 FILES = [
     'src/__init__.py',
-    'src/app/__init__.py', 'src/app/ui.py', 'src/app/example_request.json',
+    'src/app/__init__.py', 'src/app/ui.py', 'src/app/history.py', 'src/app/example_request.json',
     'src/serving/__init__.py', 'src/serving/inference.py',
     'src/data/__init__.py', 'src/data/load_data.py', 'src/data/preprocess.py',
     'src/features/__init__.py', 'src/features/build_features.py', 'src/features/bureau.py', 'src/features/previous_application.py',

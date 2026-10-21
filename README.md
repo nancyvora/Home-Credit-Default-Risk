@@ -121,9 +121,11 @@ python -m src.app.main                            # http://127.0.0.1:8000/docs, 
 docker build -t home-credit-api . && docker run -p 8000:8000 home-credit-api
 ```
 
-The Gradio interface has three tabs. **Quick check** takes a few application fields, gives every other field a typical
-value, and scores the applicant as having no credit history. **Full application (JSON)** takes the same request as the
-API. **About the model** gives the scores and the limits.
+The Gradio interface has three tabs. **Quick check** takes a few application fields (every other field takes a typical
+value) and, optionally, a few answers about the applicant's credit history: loans at other lenders, earlier Home Credit
+loans and how often they were paid late, a credit card's balance. From those answers `src/app/history.py` builds a short
+made-up history that goes through the same features and model as real records. **For developers (JSON)** takes the same
+request as the API. **About the model** gives the scores and the limits.
 
 **The Hugging Face Space** runs the same interface on ZeroGPU hardware. The scoring functions are marked `spaces.GPU`,
 although the model scores on the CPU. To update it:
