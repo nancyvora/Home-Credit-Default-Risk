@@ -13,7 +13,6 @@ features with the training preprocessing and feature code.
 Run with ``python -m src.app.main`` (or ``uvicorn src.app.app:app``) and open http://127.0.0.1:8000/docs or /ui.
 """
 import json
-from functools import lru_cache
 from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException
@@ -71,56 +70,12 @@ def api_predict(request: PredictRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-# ---------------------------------------------------------------- Gradio form
+# ---------------------------------------------------------------- Gradio interface (src/app/ui.py)
 
-EDUCATION = ['Lower secondary', 'Secondary / secondary special', 'Incomplete higher', 'Higher education', 'Academic degree']
-
-
-@lru_cache(maxsize=1)
-def typical_applicant():
-    """Values for the fields the form does not ask for: a typical applicant (median or most common value in train).
-
-    Without them those fields would be missing, which real applicants almost never are, and the model reads that as risk.
-    """
-    return json.loads((MODEL_DIR / 'typical_applicant.json').read_text(encoding='utf-8'))['values']
-
-
-def score_form(age_years, years_employed, gender, education, contract_type, income, credit, annuity, goods_price, ext_1, ext_2, ext_3):
-    """The form's fields on top of a typical applicant, with no credit history, scored by the same predict()."""
-    days = lambda years: None if years is None else -int(round(float(years) * 365.25))
-    application = {**typical_applicant(), 'SK_ID_CURR': 0, 'DAYS_BIRTH': days(age_years), 'DAYS_EMPLOYED': days(years_employed), 'CODE_GENDER': gender,
-                   'NAME_EDUCATION_TYPE': education, 'NAME_CONTRACT_TYPE': contract_type, 'AMT_INCOME_TOTAL': income, 'AMT_CREDIT': credit,
-                   'AMT_ANNUITY': annuity, 'AMT_GOODS_PRICE': goods_price, 'EXT_SOURCE_1': ext_1, 'EXT_SOURCE_2': ext_2, 'EXT_SOURCE_3': ext_3}
-    result = predict(application)
-    summary = f"Probability of payment difficulties: {result['probability']:.1%}\nDecision at {result['threshold']:.4f}: {result['decision'].upper()}"
-    reasons = [[r['feature'], r['value'], r['odds_multiplier'], r['direction']] for r in result['reasons']]
-    return summary, reasons
-
-
-def build_ui():
-    import gradio as gr
-
-    return gr.Interface(
-        fn=score_form,
-        inputs=[
-            gr.Number(label='Age (years)', value=45), gr.Number(label='Years employed', value=6),
-            gr.Dropdown(['F', 'M'], label='Gender', value='F'), gr.Dropdown(EDUCATION, label='Education', value='Higher education'),
-            gr.Dropdown(['Cash loans', 'Revolving loans'], label='Contract type', value='Cash loans'),
-            gr.Number(label='Annual income', value=180000), gr.Number(label='Credit amount', value=600000),
-            gr.Number(label='Annuity', value=27000), gr.Number(label='Price of the goods', value=500000),
-            gr.Slider(0, 1, value=0.5, label='External score 1'), gr.Slider(0, 1, value=0.6, label='External score 2'),
-            gr.Slider(0, 1, value=0.5, label='External score 3'),
-        ],
-        outputs=[gr.Textbox(label='Result'), gr.Dataframe(headers=['feature', 'value', 'odds multiplier', 'direction'], label='Main reasons')],
-        title='Home Credit default risk',
-        description=('Scores an applicant from a few application fields. Every other application field takes a typical value (the median, '
-                     'or the most common answer, among the training applicants), and the applicant is scored as having no credit history: '
-                     'no bureau records and no earlier applications. The API at /predict takes the full application and the history.'),
-    )
-
+from src.app.ui import build_ui, score_form, score_json          # noqa: E402  (score_form is used by the tests)
 
 try:
     import gradio as gr
     app = gr.mount_gradio_app(app, build_ui(), path='/ui')
-except ImportError:                             # the API works without the form
+except ImportError:                             # the API works without the interface
     pass

@@ -23,3 +23,6 @@ mlruns/
 
 # kept: the saved models of each notebook (artifacts/final_model, artifacts/model_with_*), artifacts/reports,
 # and the served model in src/serving/model, which the tests and the Docker image need
+
+# the Hugging Face Space's copy of src/, made by scripts/build_hf_space.py
+deploy/huggingface/src/
