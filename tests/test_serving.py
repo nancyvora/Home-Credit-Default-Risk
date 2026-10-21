@@ -95,6 +95,15 @@ def test_form_scores_like_the_api():
     assert all(r[0] not in ('DAYS_REGISTRATION', 'DAYS_ID_PUBLISH') or r[1] is not None for r in reasons)   # filled with typical values
 
 
+def test_form_sends_an_unavailable_external_score_as_missing():
+    args = (45, 6, 'F', 'Higher education', 'Cash loans', 180000, 600000, 27000, 500000, 0.5, 0.6, 0.5)
+    with_all, _ = score_form(*args)
+    without_1, reasons = score_form(*args, True, False, False)
+    assert with_all != without_1                                                   # the score changes
+    shown = {r[0]: r[1] for r in reasons}
+    assert shown.get('EXT_SOURCE_1', None) is None                                 # and score 1 is missing, not 0.5
+
+
 @pytest.mark.data
 @pytest.mark.slow
 def test_live_scores_equal_batch_scores():

@@ -33,9 +33,15 @@ def _reasons(result):
     return [[r['feature'], r['value'], r['odds_multiplier'], r['direction']] for r in result['reasons']]
 
 
-def score_form(age_years, years_employed, gender, education, contract_type, income, credit, annuity, goods_price, ext_1, ext_2, ext_3):
-    """The form's fields on top of a typical applicant, with no credit history, scored by the same predict()."""
+def score_form(age_years, years_employed, gender, education, contract_type, income, credit, annuity, goods_price, ext_1, ext_2, ext_3,
+               ext_1_missing=False, ext_2_missing=False, ext_3_missing=False):
+    """The form's fields on top of a typical applicant, with no credit history, scored by the same predict().
+
+    An external score marked as not available is sent as missing, as it is for many real applicants (score 1 for 56% of
+    them, score 3 for 20%); the model was trained with these gaps and reads them as information.
+    """
     days = lambda years: None if years is None else -int(round(float(years) * 365.25))
+    ext_1, ext_2, ext_3 = (None if gone else value for value, gone in [(ext_1, ext_1_missing), (ext_2, ext_2_missing), (ext_3, ext_3_missing)])
     application = {**typical_applicant(), 'SK_ID_CURR': 0, 'DAYS_BIRTH': days(age_years), 'DAYS_EMPLOYED': days(years_employed), 'CODE_GENDER': gender,
                    'NAME_EDUCATION_TYPE': education, 'NAME_CONTRACT_TYPE': contract_type, 'AMT_INCOME_TOTAL': income, 'AMT_CREDIT': credit,
                    'AMT_ANNUITY': annuity, 'AMT_GOODS_PRICE': goods_price, 'EXT_SOURCE_1': ext_1, 'EXT_SOURCE_2': ext_2, 'EXT_SOURCE_3': ext_3}
@@ -113,13 +119,19 @@ def build_ui(wrap=None):
                     annuity = gr.Number(label='Annuity', value=27000)
                     goods = gr.Number(label='Price of the goods', value=500000)
                 with gr.Column():
-                    ext_1 = gr.Slider(0, 1, value=0.5, label='External score 1')
-                    ext_2 = gr.Slider(0, 1, value=0.6, label='External score 2')
-                    ext_3 = gr.Slider(0, 1, value=0.5, label='External score 3')
+                    gr.Markdown('**External scores**: credit scores Home Credit obtained from outside sources it did not disclose. '
+                                'From 0 to 1; higher is safer. Together they are the strongest signals in the model.')
+                    ext_1 = gr.Slider(0, 1, value=0.5, label='External score 1', info='missing for 56% of real applicants')
+                    ext_1_missing = gr.Checkbox(label='Score 1 not available', value=False)
+                    ext_2 = gr.Slider(0, 1, value=0.6, label='External score 2', info='available for almost every applicant')
+                    ext_2_missing = gr.Checkbox(label='Score 2 not available', value=False)
+                    ext_3 = gr.Slider(0, 1, value=0.5, label='External score 3', info='missing for 20% of real applicants')
+                    ext_3_missing = gr.Checkbox(label='Score 3 not available', value=False)
             button = gr.Button('Score', variant='primary')
             result = gr.Textbox(label='Result', lines=2)
             reasons = gr.Dataframe(headers=REASON_HEADERS, label='Main reasons')
-            button.click(form_fn, [age, employed, gender, education, contract, income, credit, annuity, goods, ext_1, ext_2, ext_3], [result, reasons])
+            button.click(form_fn, [age, employed, gender, education, contract, income, credit, annuity, goods, ext_1, ext_2, ext_3,
+                                   ext_1_missing, ext_2_missing, ext_3_missing], [result, reasons])
         with gr.Tab('Full application (JSON)'):
             gr.Markdown(f'The request the API takes: one application row, and the applicant\'s records in any of the history tables '
                         f'({", ".join(HISTORY_TABLES)}), with the columns of the Kaggle files. A field left out is treated as missing. '
